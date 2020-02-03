@@ -2,6 +2,21 @@
 ### Description
 This project started with an aim to convert bangla handwritten images to text, i.e digitize the handwritten documents. Due to inadequate amount of data for handwritten words we started the experiment with printed word images. After that we moved on to work with  handwritten word images by synthetically generating them.  
 
+### Prerequisites 
+* opencv 
+* pytorch
+* pillow
+
+### Install Requirements 
+```Language
+pip install -r requirements.txt
+```
+### Run 
+```Language
+python training/train_v2.py
+```
+
+
 ### Dataset 
 We generated the dataset synthetically, the code of synthetic data generation can be found in the data_preparation directory.
 
