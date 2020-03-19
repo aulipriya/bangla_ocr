@@ -37,22 +37,23 @@ def my_collate(batch):
 
 def old_collate(batch):
     images, labels = zip(*batch)
-    # transform = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    # ])
-    #
-    # final_images = []
-    # # img_aug = ImageAugmentation(0.2, 0.2, 0.2, 0.2, list(images))
-    # # augmented_images = img_aug.select_image()
-    #
-    # augmented_images = list(images)
-    # for image in augmented_images:
-    #     image = Image.fromarray(image).convert('RGB')
-    #     img = transform(image)
-    #     final_images.append(img)
-    #
-    # images = tuple(final_images)
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
+
+    final_images = []
+    # img_aug = ImageAugmentation(0.2, 0.2, 0.2, 0.2, list(images))
+    # augmented_images = img_aug.select_image()
+
+    augmented_images = list(images)
+    for image in augmented_images:
+        # print(image.shape)
+        image = Image.fromarray(image).convert('RGB')
+        img = transform(image)
+        final_images.append(img)
+
+    images = tuple(final_images)
 
     images = torch.cat([t.unsqueeze(0) for t in images], 0)
     return images, labels

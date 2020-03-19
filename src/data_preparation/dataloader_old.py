@@ -4,49 +4,43 @@ from PIL import Image
 import torchvision.transforms as transforms
 import parameters
 import math
+import cv2
 
 
 class DataSetOCROld(Dataset):
 
-    def __init__(self, csv_file_path, text_file_path, root_directory):
-        self.data = pd.read_csv(csv_file_path, header=None)
+    def __init__(self, text_file_path, root_directory):
+        self.data = pd.read_csv(text_file_path, sep=',', header=None, encoding='utf-8')
         self.text_file_path = text_file_path
         self.max_image_width = parameters.max_image_width
         self.max_image_height = parameters.max_image_height
         self.transform = transforms.Compose([
-           transforms.ToTensor(),
-           transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        self.root_directory = root_directory
+        self.root = root_directory
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
-        path = self.root_directory + self.data.iloc[index, 0]
-        image = Image.open(path).convert('RGB')
-        image_height = image.size[1]
-        image_width = image.size[0]
-        height_resize_flag = False
-        width_resize_flag = False
+        # Get the image
+        word = self.data.iloc[index, 1]
+        image_name = self.data.iloc[index, 0]
+        image_path = self.root + image_name
 
-        # Calculate height and width that must be padded to match max size
-        if self.max_image_height > image_height:
-            delta_height = self.max_image_height - image_height
-        else:
-            delta_height = 0
-            height_resize_flag = True
-        if self.max_image_width > image_width:
-            delta_width = self.max_image_width - image_width
-        else:
-            delta_width = 0
-            width_resize_flag = True
-        # Calculate top and bottom padding
-        if delta_height % 2 == 0:
-            top = bottom = int(delta_height / 2)
-        else:
-            top = math.floor(delta_height / 2) + 1
-            bottom = math.floor(delta_height / 2)
+        image = cv2.imread(image_path)
+
+        image_height = image.shape[0]
+        image_width = image.shape[1]
+
+        # Calculate image height and width requirements
+        if image_height > 56:
+            image = cv2.resize(image, (image_width, 56), Image.BILINEAR)
+        delta_height = 0
+        if image_height < 56:
+            delta_height = 56 - image_height
+        delta_width = self.max_image_width - image_width
 
         # Calculate left and right padding
         if delta_width % 2 == 0:
@@ -55,32 +49,17 @@ class DataSetOCROld(Dataset):
             left = math.floor(delta_width / 2) + 1
             right = math.floor(delta_width / 2)
 
-        # Pad image
-        pad = transforms.Pad((left, top, right, bottom), fill=0, padding_mode='constant')
-        padded_image = pad(image)
+        # Calculate top and bottom padding
+        if delta_height % 2 == 0:
+            top = bottom = int(delta_height / 2)
+        else:
+            top = math.floor(delta_height / 2) + 1
+            bottom = math.floor(delta_height / 2)
 
-        # Set default resize size
-        resize_width = padded_image.size[0]
-        resize_height = padded_image.size[1]
-        # Set resize size if needed
-        if height_resize_flag:
-            resize_height = self.max_image_height
-        if width_resize_flag:
-            resize_width = self.max_image_width
+        # Add padding to image
+        image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT)
 
-        # Resize image
-        resized_image = padded_image.resize((resize_width, resize_height), Image.BILINEAR)
-        resized_image = self.transform(resized_image)
-
-        # Retrieve integer label of the image from csv file
-        integer_label = self.data.iloc[index, 1:]
-
-        # Retrieve text label of the image from the text file
-        fp = open(self.text_file_path, encoding='utf8')
-        lines = fp.readlines()
-        text_label = lines[int(integer_label)]
-        fp.close()
-        return resized_image, text_label
+        return image, word
 
 
 

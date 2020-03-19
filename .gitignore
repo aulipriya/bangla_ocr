@@ -3,4 +3,13 @@
 /training_v1.txt
 /src/ocr_env/
 /src/weights/
-/src/.idea/
+
+.idea
+/.idea/
+.idea/
+
+__pycache__
+/__pycache__
+__pycache__/
+/__pycache__/
+

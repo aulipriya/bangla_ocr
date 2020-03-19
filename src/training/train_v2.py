@@ -1,5 +1,4 @@
-#from .data_preparation.dataloader_v2 import DataSetV2
-from data_preparation.dataloader_v2 import DataSetV2
+from data_preparation.dataloader_old import DataSetOCROld
 from utills.dataloader_services import *
 from torch.utils.data import DataLoader
 import parameters
@@ -46,11 +45,9 @@ def feed_data_into_model(model, loaded_data, cost_function, optimizer_function, 
     length = torch.IntTensor(parameters.batch_size)
 
     images, texts = loaded_data
-    # print(f'grounf truths -- {texts}')
     loadData(image, images)
     string_converter = StrLabelConverter()
     t, l = string_converter.convert_string_to_integer(texts, [])
-    # print(f'ground truth integer labels -- {t}')
     loadData(text, t)
     loadData(length, l)
     if torch.cuda.is_available():
@@ -58,24 +55,12 @@ def feed_data_into_model(model, loaded_data, cost_function, optimizer_function, 
         # text = text.cuda()
         length = length.cuda()
         cost_function = cost_function.cuda()
-    numpy_image = image.numpy()[0]
-    # print(f'image -- {numpy_image.shape}')
-    # non_minus = list()
-    # non_blank_file = open('../asset/non_blank.txt', 'w')
-    # for i in range(numpy_image.shape[0]):
-    #     for j in range(numpy_image.shape[1]):
-    #         for k in range(numpy_image.shape[2]):
-    #             if numpy_image[i][j][k] != -1:
-    #                 non_minus.append(numpy_image[i][j][k])
-    # print(f'non-minus {non_minus}')
-    # non_blank_file.write(f'iteration {i}   average_cost : {non_minus} \n')
     batch_size = parameters.batch_size
     optimizer_function.zero_grad()
     preds = model(image)
     preds = F.log_softmax(preds, 2)
     preds_size = Variable(torch.IntTensor([preds.size(0)] * batch_size))
     iteration_cost = cost_function(preds, text, preds_size, length) / batch_size
-    print(f'cost ---{iteration_cost}')
     preds = None
     images = None
     iteration_cost.backward()
@@ -209,17 +194,19 @@ def val(net, dataset, criterion, optimizer, max_iter=100):
 
 def main():
     # Define datasets
-    train_dataset = DataSetV2(text_file_path=parameters.train_text_file_path)
+    train_dataset = DataSetOCROld(text_file_path=parameters.train_text_file_path,
+                                  root_directory=parameters.train_root)
     assert train_dataset
 
-    validation_dataset = DataSetV2(text_file_path=parameters.validation_text_file_path)
+    validation_dataset = DataSetOCROld(text_file_path=parameters.validation_text_file_path,
+                                       root_directory=parameters.test_root)
     assert validation_dataset
 
     # Define parameter for dataloader
     dataloader_params = {
         'batch_size': parameters.batch_size,
         'shuffle': True,
-        'collate_fn': old_collate,
+        'collate_fn': collate_v3,
         'drop_last': True
 
     }
