@@ -1,8 +1,7 @@
-/src/data/
-/src/asset/
+/data/
+/asset/
 /training_v1.txt
-/src/ocr_env/
-/src/weights/
+/weights/
 
 .idea
 /.idea/
@@ -13,3 +12,5 @@ __pycache__
 __pycache__/
 /__pycache__/
 
+/venv/
+venv/

@@ -9,9 +9,8 @@ import cv2
 
 class DataSetOCROld(Dataset):
 
-    def __init__(self, text_file_path, root_directory):
-        self.data = pd.read_csv(text_file_path, sep=',', header=None, encoding='utf-8')
-        self.text_file_path = text_file_path
+    def __init__(self, csv_file_path, root_directory):
+        self.data = pd.read_csv(csv_file_path, sep=',', header=None, encoding='utf-8')
         self.max_image_width = parameters.max_image_width
         self.max_image_height = parameters.max_image_height
         self.transform = transforms.Compose([
@@ -35,11 +34,11 @@ class DataSetOCROld(Dataset):
         image_width = image.shape[1]
 
         # Calculate image height and width requirements
-        if image_height > 56:
+        if image_height > self.max_image_height:
             image = cv2.resize(image, (image_width, 56), Image.BILINEAR)
         delta_height = 0
-        if image_height < 56:
-            delta_height = 56 - image_height
+        if image_height < self.max_image_height:
+            delta_height = self.max_image_height - image_height
         delta_width = self.max_image_width - image_width
 
         # Calculate left and right padding

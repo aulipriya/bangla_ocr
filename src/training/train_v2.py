@@ -10,8 +10,6 @@ from utills.string_label_converter import averager, StrLabelConverter
 import torch.nn.functional as F
 from utills.thread_with_return_value import ThreadWithReturnValue
 from models.mobilent_rnn import MobilenetRNN
-import nltk
-import numpy as np
 
 
 # custom weights initialization called on crnn
@@ -181,12 +179,12 @@ def val(net, dataset, criterion, optimizer, max_iter=100):
         for pred, target in zip(sim_preds, cpu_texts):
             if pred == target:
                 n_correct += 1
-            edit_distance += nltk.edit_distance(pred, target)
+            # edit_distance += nltk.edit_distance(pred, target)
             print('Prediction : {}   GT : {}'.format(pred, target))
         # Wait for loading thread to load data for next iteration
         data = loading_thread.join()
         i += 1
-    mean_edit_distance = edit_distance/float(max_iter * batch_size)
+    # mean_edit_distance = edit_distance/float(max_iter * batch_size)
     accuracy = (n_correct / float(max_iter * batch_size))*100
     print('Test loss: %f, accuracy: %f , Mean Edit Distance : %f' % (loss_avg.val(), accuracy, mean_edit_distance))
     return accuracy
@@ -194,11 +192,11 @@ def val(net, dataset, criterion, optimizer, max_iter=100):
 
 def main():
     # Define datasets
-    train_dataset = DataSetOCROld(text_file_path=parameters.train_text_file_path,
+    train_dataset = DataSetOCROld(csv_file_path=parameters.train_text_file_path,
                                   root_directory=parameters.train_root)
     assert train_dataset
 
-    validation_dataset = DataSetOCROld(text_file_path=parameters.validation_text_file_path,
+    validation_dataset = DataSetOCROld(csv_file_path=parameters.validation_text_file_path,
                                        root_directory=parameters.test_root)
     assert validation_dataset
 

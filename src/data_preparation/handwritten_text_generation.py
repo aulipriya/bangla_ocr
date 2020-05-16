@@ -3,25 +3,7 @@ import cv2
 import random
 import numpy as np
 import math
-
-
-def check_highest_width_height():
-    directory = '/media/aulipriya/6d389279-103f-4b77-99c5-e24fd8e753dc/home/bjit/ocr/ocr-project/data/BanglaLekha-Isolated/Images'
-    max_width = 0
-    max_height = 0
-    for sub_directory in os.listdir(directory):
-        for image in os.listdir(directory + '/' + sub_directory):
-            image = cv2.imread(directory + '/' + sub_directory + '/' + image, cv2.IMREAD_UNCHANGED)
-            if image.shape[0] > max_height:
-                max_height = image.shape[0]
-            if image.shape[1] > max_width:
-                max_width = image.shape[1]
-
-    print(f'max width {max_width}')
-    print(f'max height {max_height}')
-
-    # Max width 382
-    # Max height 389
+import parameters
 
 
 def make_character_to_folder_map_dict(text_file_path):
@@ -92,8 +74,6 @@ def word_to_symbols(word):
 
 
 def blend_modifier_after(letter, modifier):
-
-    #cv2.imshow("modifier",modifier)
     """
     blender for 'া' , 'JOFOLA'
     """
@@ -383,20 +363,17 @@ def blend_modifier_top(letter, modifier, modifier_symbol):
 
 def get_symbol_image(symbol):
     bangla_character_dict = make_character_to_folder_map_dict(
-        '../asset/bangla_bornomala2.txt')
+        parameters.bangla_character_list_file)
 
     img_folder = bangla_character_dict[symbol]
-    img_path = '../data/banglalekha_resized_2/'
+    img_path = parameters.bangla_character_images_path
     symbol_path = img_path + str(img_folder)
     img_files = os.listdir(symbol_path)
     selected_image_file = random.choice(img_files)
-    # print(selected_image_file)
+
     symbol_img = symbol_path + '/' + selected_image_file
-    # print(symbol_img)
     img_original = cv2.imread(symbol_img, cv2.IMREAD_UNCHANGED)
-    #cv2.imshow("diganta_image",img_original)
-    #cv2.waitKey(0)
-    # print("Original_image_shape->",img_original.shape)
+
     return img_original
 
 
@@ -595,20 +572,14 @@ def seq_to_img(seq, image_name=None, image_path=None):
         else:
 
             symbol_image = get_symbol_image(seq[i])
-            # print("Symbole_image_shape_before-->",symbol_image.shape[0])
             if len(symbol_image.shape) > 2:
                 symbol_image = symbol_image[:, :, 2]
             if symbol_image.shape[0] > 28:
-                # print("Symbol_image_shape",symbol_image.shape)
                 symbol_image = np.vstack((symbol_image, np.zeros((14, 28), np.int8)))
-                # print("YES1")
 
             else:
                 symbol_image = np.vstack((np.zeros((14, 28), np.int8), symbol_image, np.zeros((14, 28), np.int8)))
-                # print("YES2")
 
-
-            # print("Symbole_image_shape_after-->", symbol_image.shape)
             img = np.hstack((img, symbol_image))
             i += 1
     if image_name is not None and image_path is not None:
@@ -661,7 +632,7 @@ def generate_static_test_dataset(text_file_path):
 # generate_static_test_dataset('../asset/all_words.txt')
 # generate_word_images('../asset/nan_test.txt')
 
-seq_to_img('অপরাধীদের', 'synthetic_word_6.png', '../test_data/')
+# seq_to_img('অপরাধীদের', 'synthetic_word_6.png', '../test_data/')
 #get_modified_image('ঠ', 'ি')
 
 # word_to_symbols('তত্ত্ব')

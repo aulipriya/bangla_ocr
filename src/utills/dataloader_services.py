@@ -1,7 +1,7 @@
 import torch
 import torchvision.transforms as transforms
 import math
-from data_preparation.ImageAugmentation import ImageAugmentation
+# from data_preparation.ImageAugmentation import ImageAugmentation
 import cv2
 from PIL import Image
 import torchvision.transforms as transforms
@@ -43,12 +43,15 @@ def old_collate(batch):
     ])
 
     final_images = []
+
+    # Image augmentation
     # img_aug = ImageAugmentation(0.2, 0.2, 0.2, 0.2, list(images))
     # augmented_images = img_aug.select_image()
 
     augmented_images = list(images)
+
+    # Converting augmented numpy images to PIL and applying transform
     for image in augmented_images:
-        # print(image.shape)
         image = Image.fromarray(image).convert('RGB')
         img = transform(image)
         final_images.append(img)
